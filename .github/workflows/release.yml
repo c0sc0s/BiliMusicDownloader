@@ -1,0 +1,99 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install cairosvg pillow
+
+      - name: Generate icon
+        run: python scripts/convert_icon.py
+
+      - name: Build exe with PyInstaller
+        run: |
+          pyinstaller --noconfirm `
+            --onefile `
+            --name "BiliMusic" `
+            --icon "assets/icon.ico" `
+            --add-data "templates;templates" `
+            --add-data "assets;assets" `
+            --hidden-import=webview `
+            --hidden-import=yt_dlp `
+            --collect-all pywebview `
+            desktop.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BiliMusic-Windows
+          path: dist/BiliMusic.exe
+
+  release:
+    needs: build-windows
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Windows build
+        uses: actions/download-artifact@v4
+        with:
+          name: BiliMusic-Windows
+          path: release/
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: BiliMusic ${{ steps.version.outputs.VERSION }}
+          body: |
+            ## BiliMusic ${{ steps.version.outputs.VERSION }}
+
+            从 B 站视频提取纯音频的桌面应用。
+
+            ### 下载
+
+            - **Windows**: `BiliMusic.exe` (单文件，无需安装)
+
+            ### 使用前提
+
+            需要在系统中安装 **FFmpeg** 并加入 PATH：
+            ```powershell
+            winget install FFmpeg
+            ```
+
+            ### 使用方法
+
+            1. 双击运行 `BiliMusic.exe`
+            2. 粘贴 B 站视频链接
+            3. 选择格式并点击「提取音频」
+            4. 音频将保存在 exe 所在目录的 `downloads/` 文件夹
+
+          files: |
+            release/BiliMusic.exe
+          draft: false
+          prerelease: false
