@@ -8,8 +8,10 @@ cd /d "%SCRIPT_DIR%"
 REM 检查图标文件，若不存在则尝试生成
 if not exist "assets\icon.ico" (
     echo 正在生成图标...
-    pip install cairosvg pillow -q
     python scripts\convert_icon.py
+    if errorlevel 1 (
+        echo 图标生成失败，将继续无图标打包。
+    )
 )
 
 REM 设置图标参数

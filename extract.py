@@ -5,6 +5,8 @@
 import argparse
 import os
 import re
+import shutil
+import subprocess
 import sys
 
 import yt_dlp
@@ -18,6 +20,60 @@ BILIBILI_URL_PATTERN = re.compile(
 
 def is_bilibili_video_url(url: str) -> bool:
     return bool(BILIBILI_URL_PATTERN.search(url))
+
+
+def _is_valid_ffmpeg(path: str) -> bool:
+    if not path or not os.path.isfile(path):
+        return False
+    try:
+        result = subprocess.run(
+            [path, "-version"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=2,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+def resolve_ffmpeg_path() -> str | None:
+    env_path = os.environ.get("FFMPEG_PATH") or os.environ.get("BILI_MUSIC_FFMPEG")
+    candidates = []
+    if env_path:
+        if os.path.isdir(env_path):
+            candidates.append(os.path.join(env_path, "ffmpeg.exe"))
+        candidates.append(env_path)
+    which_path = shutil.which("ffmpeg")
+    if which_path:
+        candidates.append(which_path)
+    base_dirs = []
+    if getattr(sys, "frozen", False):
+        base_dirs.append(os.path.dirname(sys.executable))
+    base_dirs.append(os.path.dirname(os.path.abspath(__file__)))
+    for base in base_dirs:
+        candidates.append(os.path.join(base, "ffmpeg.exe"))
+        candidates.append(os.path.join(base, "bin", "ffmpeg.exe"))
+    candidates.extend(
+        [
+            r"C:\ffmpeg\bin\ffmpeg.exe",
+            r"C:\Program Files\ffmpeg\bin\ffmpeg.exe",
+            r"C:\Program Files\FFmpeg\bin\ffmpeg.exe",
+            r"C:\Program Files (x86)\ffmpeg\bin\ffmpeg.exe",
+            r"C:\Program Files (x86)\FFmpeg\bin\ffmpeg.exe",
+        ]
+    )
+    seen = set()
+    for path in candidates:
+        if not path:
+            continue
+        norm = os.path.normpath(path)
+        if norm in seen:
+            continue
+        seen.add(norm)
+        if _is_valid_ffmpeg(norm):
+            return norm
+    return None
 
 
 def extract_audio(
@@ -56,6 +112,9 @@ def extract_audio(
         ],
         "quiet": False,
     }
+    ffmpeg_path = resolve_ffmpeg_path()
+    if ffmpeg_path:
+        opts["ffmpeg_location"] = ffmpeg_path
 
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=True)

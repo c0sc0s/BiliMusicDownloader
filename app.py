@@ -7,12 +7,12 @@ import urllib.parse
 
 from flask import Flask, jsonify, render_template, request, send_file, url_for
 
-from extract import extract_audio, is_bilibili_video_url
+from extract import extract_audio, is_bilibili_video_url, resolve_ffmpeg_path
 
 
 def check_ffmpeg() -> bool:
     """检查系统是否安装了 FFmpeg"""
-    return shutil.which("ffmpeg") is not None
+    return resolve_ffmpeg_path() is not None
 
 app = Flask(__name__)
 _root = os.environ.get("BILI_MUSIC_APP_ROOT") or os.path.dirname(os.path.abspath(__file__))

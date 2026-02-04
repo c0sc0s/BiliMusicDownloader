@@ -515,6 +515,18 @@
           })
           .catch(function () {});
 
+        function triggerDownload(url) {
+          // 使用隐藏 iframe 触发下载，避免页面跳转
+          var iframe = document.getElementById("downloadFrame");
+          if (!iframe) {
+            iframe = document.createElement("iframe");
+            iframe.id = "downloadFrame";
+            iframe.style.display = "none";
+            document.body.appendChild(iframe);
+          }
+          iframe.src = url;
+        }
+
         form.addEventListener("submit", function (e) {
           e.preventDefault();
           showMsg("", "");
@@ -532,14 +544,13 @@
             })
             .then(function (data) {
               if (data.download_url) {
-                showMsg("提取成功，正在下载…", "success");
-                var a = document.createElement("a");
-                a.href = data.download_url;
-                a.download = "";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                // 先更新 UI，再触发下载
                 setBusy(false);
+                showMsg("提取成功！文件已保存到 downloads 文件夹", "success");
+                // 延迟触发下载，确保 UI 已更新
+                setTimeout(function () {
+                  triggerDownload(data.download_url);
+                }, 100);
                 return;
               }
               showMsg("未返回下载链接", "error");
