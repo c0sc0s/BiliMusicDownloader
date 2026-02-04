@@ -9,14 +9,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/user/bili-music/releases/latest">
-    <img src="https://img.shields.io/github/v/release/user/bili-music?style=flat-square" alt="Release">
+  <a href="https://github.com/c0sc0s/BiliMusicDownloader/releases/latest">
+    <img src="https://img.shields.io/github/v/release/c0sc0s/BiliMusicDownloader?style=flat-square" alt="Release">
   </a>
-  <a href="https://github.com/user/bili-music/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/user/bili-music?style=flat-square" alt="License">
+  <a href="https://github.com/c0sc0s/BiliMusicDownloader/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/c0sc0s/BiliMusicDownloader?style=flat-square" alt="License">
   </a>
-  <a href="https://github.com/user/bili-music/actions">
-    <img src="https://img.shields.io/github/actions/workflow/status/user/bili-music/release.yml?style=flat-square" alt="Build">
+  <a href="https://github.com/c0sc0s/BiliMusicDownloader/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/c0sc0s/BiliMusicDownloader/release.yml?style=flat-square" alt="Build">
   </a>
 </p>
 
@@ -33,7 +33,7 @@
 
 ## 下载
 
-前往 [Releases](https://github.com/user/bili-music/releases/latest) 页面下载最新版本：
+前往 [Releases](https://github.com/c0sc0s/BiliMusicDownloader/releases/latest) 页面下载最新版本：
 
 - **Windows**: `BiliMusic.exe`（单文件，双击运行）
 
@@ -94,8 +94,8 @@ python app.py
 ### 安装依赖
 
 ```bash
-git clone https://github.com/user/bili-music.git
-cd bili-music
+git clone https://github.com/c0sc0s/BiliMusicDownloader.git
+cd BiliMusicDownloader
 pip install -r requirements.txt
 ```
 
@@ -117,7 +117,7 @@ build.bat
 ## 项目结构
 
 ```
-bili-music/
+BiliMusicDownloader/
 ├── app.py              # Flask Web 后端
 ├── desktop.py          # 桌面应用入口（pywebview）
 ├── extract.py          # 音频提取核心逻辑
@@ -186,4 +186,3 @@ bili-music/
 <p align="center">
   Made with ❤️ for music lovers
 </p>
-# BiliMusicDownloader
