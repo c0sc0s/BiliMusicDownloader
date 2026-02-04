@@ -37,10 +37,37 @@ def _is_valid_ffmpeg(path: str) -> bool:
         return False
 
 
+def _iter_windows_app_paths() -> list[str]:
+    try:
+        import winreg
+    except Exception:
+        return []
+    results = []
+    for root in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
+        try:
+            key = winreg.OpenKey(
+                root, r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\ffmpeg.exe"
+            )
+            value, _ = winreg.QueryValueEx(key, None)
+            if value:
+                results.append(value)
+            try:
+                base, _ = winreg.QueryValueEx(key, "Path")
+                if base:
+                    results.append(os.path.join(base, "ffmpeg.exe"))
+            except Exception:
+                pass
+            winreg.CloseKey(key)
+        except Exception:
+            pass
+    return results
+
+
 def resolve_ffmpeg_path() -> str | None:
     env_path = os.environ.get("FFMPEG_PATH") or os.environ.get("BILI_MUSIC_FFMPEG")
     candidates = []
     if env_path:
+        env_path = env_path.strip().strip('"').strip("'")
         if os.path.isdir(env_path):
             candidates.append(os.path.join(env_path, "ffmpeg.exe"))
         candidates.append(env_path)
@@ -54,6 +81,12 @@ def resolve_ffmpeg_path() -> str | None:
     for base in base_dirs:
         candidates.append(os.path.join(base, "ffmpeg.exe"))
         candidates.append(os.path.join(base, "bin", "ffmpeg.exe"))
+    if os.name == "nt":
+        candidates.extend(_iter_windows_app_paths())
+        local_appdata = os.environ.get("LOCALAPPDATA")
+        if local_appdata:
+            candidates.append(os.path.join(local_appdata, "Microsoft", "WinGet", "Links", "ffmpeg.exe"))
+            candidates.append(os.path.join(local_appdata, "Microsoft", "WindowsApps", "ffmpeg.exe"))
     candidates.extend(
         [
             r"C:\ffmpeg\bin\ffmpeg.exe",
@@ -61,6 +94,7 @@ def resolve_ffmpeg_path() -> str | None:
             r"C:\Program Files\FFmpeg\bin\ffmpeg.exe",
             r"C:\Program Files (x86)\ffmpeg\bin\ffmpeg.exe",
             r"C:\Program Files (x86)\FFmpeg\bin\ffmpeg.exe",
+            r"C:\ProgramData\chocolatey\bin\ffmpeg.exe",
         ]
     )
     seen = set()

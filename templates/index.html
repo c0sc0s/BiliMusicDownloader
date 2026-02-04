@@ -364,7 +364,7 @@
     <div class="container">
       <main>
         <!-- FFmpeg Warning -->
-        <div class="msg warning" id="ffmpegWarn">
+        <div class="msg warning" id="ffmpegWarn" style="display: none">
           未检测到 FFmpeg。请先安装 FFmpeg 并加入系统 PATH。
           <a href="#" id="ffmpegHelp">查看安装方法</a>
         </div>
@@ -511,7 +511,11 @@
             return r.json();
           })
           .then(function (d) {
-            if (!d.ffmpeg) ffmpegWarn.style.display = "block";
+            if (d && d.ffmpeg) {
+              ffmpegWarn.style.display = "none";
+            } else {
+              ffmpegWarn.style.display = "block";
+            }
           })
           .catch(function () {});
 

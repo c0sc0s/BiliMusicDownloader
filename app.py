@@ -2,7 +2,6 @@
 Web 界面：输入 B 站视频链接，提取并下载音频。
 """
 import os
-import shutil
 import urllib.parse
 
 from flask import Flask, jsonify, render_template, request, send_file, url_for
@@ -10,9 +9,10 @@ from flask import Flask, jsonify, render_template, request, send_file, url_for
 from extract import extract_audio, is_bilibili_video_url, resolve_ffmpeg_path
 
 
-def check_ffmpeg() -> bool:
+def check_ffmpeg() -> tuple[bool, str | None]:
     """检查系统是否安装了 FFmpeg"""
-    return resolve_ffmpeg_path() is not None
+    path = resolve_ffmpeg_path()
+    return (path is not None, path)
 
 app = Flask(__name__)
 _root = os.environ.get("BILI_MUSIC_APP_ROOT") or os.path.dirname(os.path.abspath(__file__))
@@ -32,7 +32,8 @@ def index():
 @app.route("/api/check-env")
 def check_env():
     """检查运行环境（FFmpeg 等）"""
-    return jsonify({"ffmpeg": check_ffmpeg()})
+    ok, path = check_ffmpeg()
+    return jsonify({"ffmpeg": ok, "ffmpeg_path": path})
 
 
 @app.route("/extract", methods=["POST"])

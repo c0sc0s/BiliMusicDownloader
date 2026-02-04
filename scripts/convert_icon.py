@@ -8,7 +8,7 @@ from pathlib import Path
 try:
     from PIL import Image, ImageDraw
 except ImportError:
-    print("请先安装依赖: pip install pillow")
+    print("Missing dependency: pillow. Run: pip install pillow")
     sys.exit(1)
 
 
@@ -108,7 +108,7 @@ def create_icon(ico_path: Path, sizes: list[int] | None = None):
         sizes=[(s, s) for s in sizes],
         append_images=images[1:],
     )
-    print(f"已生成: {ico_path}")
+    print(f"Generated: {ico_path}")
 
 
 if __name__ == "__main__":
